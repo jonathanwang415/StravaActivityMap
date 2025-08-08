@@ -5,7 +5,6 @@ import ActivityMap from '../components/ActivityMap';
 import { getStravaAuthUrl } from '../utils/strava';
 import { useSearchParams } from 'next/navigation';
 
-
 export default function HomePage() {
     const searchParams = useSearchParams();
     const token = searchParams.get('access_token');
@@ -14,34 +13,6 @@ export default function HomePage() {
 
     const [activities, setActivities] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    // const [token, setToken] = useState<string | null>(null);
-
-    // useEffect(() => {
-    //     if (!token && code) {
-    //         setLoading(true);
-    //         console.log('Exchanging code for token:', code);
-    //         fetch('/api/auth/exchange_token', {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({ code }),
-    //         })
-    //             .then((res) => res.json())
-    //             .then((data) => {
-    //                 console.log('Token exchange response:', data);
-    //                 if (data.access_token) {
-    //                     setToken(data.access_token);
-    //                     localStorage.setItem('strava_token', data.access_token);
-    //                     window.history.replaceState({}, document.title, '/');
-    //                 }
-    //             })
-    //             .catch(console.error)
-    //             .finally(() => setLoading(false));
-    //     } else {
-    //         console.log('Using stored token:', token);
-    //         const stored = localStorage.getItem('strava_token');
-    //         if (stored) setToken(stored);
-    //     }
-    // }, [code, token]);
 
     useEffect(() => {
         if (!token){
@@ -52,13 +23,6 @@ export default function HomePage() {
         console.log('Fetching activities with token:', token);
 
         setLoading(true);
-
-        // const response = await axios.post('https://www.strava.com/oauth/token', {
-        //     client_id: process.env.NEXT_PUBLIC_STRAVA_CLIENT_ID,
-        //     client_secret: process.env.NEXT_PUBLIC_STRAVA_CLIENT_SECRET,
-        //     code,
-        //     grant_type: 'authorization_code',
-        // });
 
         fetch('https://www.strava.com/api/v3/athlete/activities?per_page=100', {
             headers: { Authorization: `Bearer ${token}` },
@@ -94,6 +58,4 @@ export default function HomePage() {
             <h1>My Strava Activities</h1>
             <ActivityMap activities={activities} />
         </div>)
-
-    // return <ActivityMap activities={activities} />;
 }
