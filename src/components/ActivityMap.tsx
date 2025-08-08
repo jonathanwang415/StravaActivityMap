@@ -14,6 +14,14 @@ interface Activity {
   sport_type: string;
 }
 
+const colorMap: Record<string, string> = {
+    Ride: 'red',
+    Run: 'blue',
+    Hike: 'green',
+    Walk: 'purple',
+    AlpineSki: 'darkblue',
+};
+
 interface Props {
   activities: Activity[];
 }
@@ -25,7 +33,7 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
             {activities.map((activity) => {
                 if (!activity.map.summary_polyline) return null;
                 const coords = polyline.decode(activity.map.summary_polyline);
-                const color = activity.sport_type === "Ride" ? "red" : "blue";
+                const color = colorMap[activity.sport_type];
                 return <Polyline key={activity.id} positions={coords} color={color}/>;
             })}
         </MapContainer>

@@ -3,12 +3,10 @@ import axios from 'axios';
 
 // Handle GET request from Strava redirect
 export async function GET(req: NextRequest) {
-    console.log('GET exchange route called from Strava redirect');
     const { searchParams } = new URL(req.url);
     const code = searchParams.get('code');
 
     if (!code) {
-        console.log('Missing code in URL params');
         return NextResponse.redirect(new URL('/?error=missing_code', req.url));
     }
 
@@ -17,8 +15,8 @@ export async function GET(req: NextRequest) {
     try {
         const tokenData = await exchangeCodeForToken(code);
         
-        // Redirect to home page - you can handle the token on the frontend
-        return NextResponse.redirect(new URL(`/?access_token=${tokenData.access_token}`, req.url));
+        // Redirect to login page - you can handle the token on the frontend
+        return NextResponse.redirect(new URL(`/login?access_token=${tokenData.access_token}`, req.url));
     } catch (error) {
         console.error('GET token exchange error:', error);
         return NextResponse.redirect(new URL('/?error=token_exchange_failed', req.url));
