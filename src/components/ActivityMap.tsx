@@ -14,6 +14,12 @@ interface Activity {
     summary_polyline: string;
   };
   sport_type: string;
+  average_speed: number;
+  max_speed: number;
+  moving_time: number;
+  elaspsed_time: number;
+  total_elevation_gain: number;
+  distance: number;
 }
 
 const colorMap: Record<string, string> = {
@@ -45,6 +51,11 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
         name: string;
         sport_type: string;
         id: number;
+        average_speed: number;
+        max_speed: number;
+        moving_time: number;
+        total_elevation_gain: number;
+        distance: number;
       } | null>(null);
 
     const [clicked, setClicked] = useState(false);
@@ -98,6 +109,11 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
                                 name: activity.name,
                                 sport_type: activity.sport_type,
                                 id: activity.id,
+                                average_speed: activity.average_speed,
+                                max_speed: activity.max_speed,
+                                moving_time: activity.moving_time,
+                                total_elevation_gain: activity.total_elevation_gain,
+                                distance: activity.distance,
                             });
                         }}
                         onMouseOver={() => {
@@ -111,6 +127,11 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
                                 name: activity.name,
                                 sport_type: activity.sport_type,
                                 id: activity.id,
+                                average_speed: activity.average_speed,
+                                max_speed: activity.max_speed,
+                                moving_time: activity.moving_time,
+                                total_elevation_gain: activity.total_elevation_gain,
+                                distance: activity.distance,
                             });
                         }}
                         onMouseOut={() => {
@@ -136,7 +157,13 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
                                     {selectedActivity.name}
                                 </a>
                             </h3>
+
                             <p style={{ margin: 0 }}>Type: {selectedActivity.sport_type}</p>
+                            <p style={{ margin: 0 }}>Average Speed: {Math.floor(selectedActivity.average_speed * 2.23694)} mph </p>
+                            <p style={{ margin: 0 }}>Max Speed: {Math.floor(selectedActivity.max_speed * 2.23694)} mph</p>
+                            <p style={{ margin: 0 }}>Moving Time: {Math.floor(selectedActivity.moving_time / 60)} minutes</p>
+                            <p style={{ margin: 0 }}>Total Elevation Gain: {Math.floor(selectedActivity.total_elevation_gain * 3.28084)} ft</p>
+                            <p style={{ margin: 0 }}>Distance: {Math.floor(selectedActivity.distance * 3.28084 / 5280)} miles</p>
                         </div>
                     </InfoWindow>
                 )}
