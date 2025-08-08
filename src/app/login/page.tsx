@@ -13,9 +13,10 @@ export default function LoginPage() {
     const token = searchParams.get('access_token');
 
     const { setToken } = useAuth();
-
     const router = useRouter();
+
     useEffect(() => {
+
         if (isAuthenticated) {
             // Redirect to home page if already authenticated
             router.push('/home');
@@ -23,7 +24,7 @@ export default function LoginPage() {
             setToken(token);
             router.push('/home'); // Redirect to home after setting token
         }
-    }, [isAuthenticated, router]);
+    }, [isAuthenticated]);
 
     return (
         <a href={getStravaAuthUrl()} className="btn">

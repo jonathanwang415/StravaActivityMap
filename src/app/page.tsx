@@ -8,7 +8,6 @@ export default function HomePage() {
     const router = useRouter();
 
     useEffect(() => {
-        
         if (isAuthenticated) {
             // Redirect to home page if already authenticated
             router.push('/home');
@@ -16,7 +15,7 @@ export default function HomePage() {
             // Redirect to login page if not authenticated
             router.push('/login');
         }
-    }, [isAuthenticated, router]);
+    }, [isAuthenticated]);
 
     return null;
 }

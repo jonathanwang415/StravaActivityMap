@@ -5,6 +5,7 @@ import ActivityMap from '../../components/ActivityMap';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLoading } from '@/contexts/LoadingContext';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 export default function HomePage() {
     const { token, isAuthenticated } = useAuth();
@@ -29,22 +30,39 @@ export default function HomePage() {
 
         setLoading(true);
 
-        fetch('https://www.strava.com/api/v3/athlete/activities?per_page=200', {
-            headers: { Authorization: `Bearer ${token}` },
-        })
-            .then((res) => {
-                if (!res.ok) {
-                    // Handle unauthorized specifically
-                    if (res.status === 401) {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            params : {
+                per_page: 200
+            }
+        };
+
+        axios.get('https://www.strava.com/api/v3/athlete/activities', config)
+            .then(response => {
+                if (response.status !== 200) {
+                    if (response.status === 401) {
                         console.error('Unauthorized: Token is invalid or expired. Redirecting for re-authorization.');
-                    }
-                    throw new Error(`HTTP error! status: ${res.status}`);
+                        const router = useRouter();
+                        router.push('/login');
+                    } 
+                } else {
+                    console.log('Activities fetched successfully:', response.data);
+                    setActivities(response.data);
                 }
-            return res.json();
-        })
-            .then(setActivities)
-            .catch(console.error)
-            .finally(() => setLoading(false));
+            })
+            .catch(error => {
+                console.error('Error fetching activities:', error);
+                if (error.response && error.response.status === 401) {
+                    console.error('Unauthorized: Token is invalid or expired. Redirecting for re-authorization.');
+                    const router = useRouter();
+                    router.push('/login');
+                }
+            })
+            .finally(() => {
+                setLoading(false);
+            }); 
     }, [token]);
 
     if (isLoading) {
