@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import ActivityMap from '../../components/ActivityMap';
+import { getAiCommentary } from '../../utils/openai';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLoading } from '@/contexts/LoadingContext';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { get } from 'http';
 
 export default function HomePage() {
     const { token, isAuthenticated } = useAuth();
@@ -17,6 +19,7 @@ export default function HomePage() {
     }
 
     const [activities, setActivities] = useState<any[]>([]);
+    const [aiInsights, setAiInsights] = useState<string>('');
 
     const { isLoading, setLoading, loadingMessage } = useLoading();
 
@@ -49,7 +52,13 @@ export default function HomePage() {
                     } 
                 } else {
                     console.log('Activities fetched successfully:', response.data);
+
+                    const insight = getAiCommentary(response.data);
+                    console.log('AI Insights:', insight);
+
                     setActivities(response.data);
+                    setLoading(false);
+                    setAiInsights(insight)
                 }
             })
             .catch(error => {
@@ -59,10 +68,7 @@ export default function HomePage() {
                     const router = useRouter();
                     router.push('/login');
                 }
-            })
-            .finally(() => {
-                setLoading(false);
-            }); 
+            });
     }, [token]);
 
     if (isLoading) {
@@ -73,9 +79,12 @@ export default function HomePage() {
         return <p>No activities found.</p>
     };
 
+
     return (
         <div>
             <h1>My Strava Activities</h1>
+            <p> Total Activities : {activities.length}</p>
+            <p> AI Insights: {aiInsights}</p>
             <ActivityMap activities={activities} />
         </div>
     );

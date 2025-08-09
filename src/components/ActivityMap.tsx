@@ -3,24 +3,10 @@
 import React, { useState } from 'react';
 // Used with OpenStreetMap
 // import { MapContainer, TileLayer, Polyline } from 'react-leaflet';
+import  { Activity } from '@/types/Activity';
 import { GoogleMap, LoadScript, Polyline as GooglePolyline, InfoWindow } from "@react-google-maps/api";
 import polyline from '@mapbox/polyline';
 import 'leaflet/dist/leaflet.css';
-
-interface Activity {
-  id: number;
-  name: string;
-  map: {
-    summary_polyline: string;
-  };
-  sport_type: string;
-  average_speed: number;
-  max_speed: number;
-  moving_time: number;
-  elaspsed_time: number;
-  total_elevation_gain: number;
-  distance: number;
-}
 
 const colorMap: Record<string, string> = {
     Ride: 'red',
@@ -56,6 +42,7 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
         moving_time: number;
         total_elevation_gain: number;
         distance: number;
+        // calories: number;
       } | null>(null);
 
     const [clicked, setClicked] = useState(false);
@@ -114,6 +101,7 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
                                 moving_time: activity.moving_time,
                                 total_elevation_gain: activity.total_elevation_gain,
                                 distance: activity.distance,
+                                // calories: activity.calories || 0, // Assuming calories is part of the activity data
                             });
                         }}
                         onMouseOver={() => {
@@ -132,6 +120,7 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
                                 moving_time: activity.moving_time,
                                 total_elevation_gain: activity.total_elevation_gain,
                                 distance: activity.distance,
+                                // calories: activity.calories || 0, // Assuming calories is part of the activity data
                             });
                         }}
                         onMouseOut={() => {
@@ -164,6 +153,7 @@ const ActivityMap: React.FC<Props> = ({ activities }) => {
                             <p style={{ margin: 0 }}>Moving Time: {Math.floor(selectedActivity.moving_time / 60)} minutes</p>
                             <p style={{ margin: 0 }}>Total Elevation Gain: {Math.floor(selectedActivity.total_elevation_gain * 3.28084)} ft</p>
                             <p style={{ margin: 0 }}>Distance: {Math.floor(selectedActivity.distance * 3.28084 / 5280)} miles</p>
+                            {/* <p style={{ margin: 0 }}>Calories: {selectedActivity.calories}</p> */}
                         </div>
                     </InfoWindow>
                 )}
