@@ -11,5 +11,6 @@ export interface Activity {
     elaspsed_time: number;
     total_elevation_gain: number;
     distance: number;
+    kilojoules?: number; // Optional, not all activities have kilojoules
   //   calories: number
 };

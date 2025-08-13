@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
-    const {isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
 
     const searchParams = useSearchParams();
     const token = searchParams.get('access_token');
