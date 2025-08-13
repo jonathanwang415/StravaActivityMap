@@ -1,32 +1,41 @@
 'use client';
 
-import React, { use, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import ActivityMap from '../../components/ActivityMap';
-import { getAiPrompt } from '../../utils/openai';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLoading } from '@/contexts/LoadingContext';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { get } from 'http';
+import { Activity } from '@/types/Activity';
 
 export default function HomePage() {
-    const { token, isAuthenticated, logout } = useAuth();
+    const { token } = useAuth();
     const router = useRouter();
-
-    if (!isAuthenticated) {
-        router.push('/login');
-        return null; // Prevent rendering while redirecting
-    }
 
     const { isLoading, setLoading, loadingMessage } = useLoading();
     const [activities, setActivities] = useState<any[]>([]);
     const [aiInsights, setAiInsights] = useState<string>('');
+    const hasFetched = useRef(false);
+
 
     useEffect(() => {
         if (!token){
             console.log('No token found, skipping API call');
+            setTimeout(() => {
+                router.push('/login');
+            }, 0);
             return;
         }
+
+        if (activities && aiInsights) {
+            return; // Skip if activities and insights are already set
+        }
+
+        if (hasFetched.current) {
+            return;
+        }
+        
+        hasFetched.current = true;
 
         console.log('Fetching activities with token:', token);
 
@@ -41,6 +50,10 @@ export default function HomePage() {
             }
         };
 
+        if (!isLoading) {
+            return;
+        }
+
         axios.get('https://www.strava.com/api/v3/athlete/activities', config)
             .then(stravaResponse => {
                 if (stravaResponse.status !== 200) {
@@ -50,31 +63,69 @@ export default function HomePage() {
                         router.push('/login');
                     }
                 } else {
-                    const stravaActivities = stravaResponse.data;
+                    const stravaActivities: Activity [] = stravaResponse.data;
                     console.log('Activities fetched successfully:', stravaActivities);
 
-                    const prompt = getAiPrompt(stravaActivities);
+                    const totalMileage = stravaActivities.reduce((total, activity) => {
+                        if (!activity.distance) {
+                            return total; // Skip if distance is not available
+                        }
+                
+                        return total + activity.distance * 3.28084 / 5280; // Convert meters to miles
+                    }, 0);
+                
+                    const totalCyclingPower = stravaActivities.reduce((total, activity) => {
+                        if (!activity.kilojoules || !activity.sport_type || activity.sport_type !== "Ride") {
+                            return total; // Skip if distance is not available
+                        }
+                
+                        return total + activity.kilojoules; // Convert meters to miles
+                    }, 0);
 
-                    console.log('AI Prompt:', prompt);
+                    console.log('totalMileage:', totalMileage);
+                    console.log('totalCyclingPower:', totalCyclingPower);
 
-                    if (!aiInsights) {
-                        axios.post('/api/openai', { prompt })
-                        .then(openAIResponse => {
-                            if (openAIResponse.status !== 200) {
-                                console.error('Error fetching AI insights:', openAIResponse.statusText);
-                            }
+                    async function fetchAiInsights(totalMileage: number, totalCyclingPower: number) {
+                        console.log('fetchAiInsights called.');
 
-                            const insight = openAIResponse.data;
-                            console.log('AI response:', insight);
+                        try {
+                            console.log('fetchAiInsights post.');
 
+                            const res = await axios.post("/api/ollama", {
+                                totalMileage,
+                                totalCyclingPower
+                            });
+                            console.log('fetchAiInsights post returned.');
+                            console.log('AI Insights:', res.data.commentary);
                             setActivities(stravaActivities);
+                            setAiInsights(res.data.commentary);
+                        } catch (err) {
+                            console.error("Error fetching commentary:", err);
+                        } finally {
                             setLoading(false);
-                            setAiInsights(insight.result);
-                        })
-                        .catch(error => {
-                            console.error('Error fetching AI insights:', error);
-                        });
+                        }
                     }
+                    
+                    fetchAiInsights(totalMileage, totalCyclingPower);
+
+                    // if (!aiInsights) {
+                    //     axios.post('/api/openai', { totalMileage, totalCyclingPower })
+                    //     .then(openAIResponse => {
+                    //         if (openAIResponse.status !== 200) {
+                    //             console.error('Error fetching AI insights:', openAIResponse.statusText);
+                    //         }
+
+                    //         const insight = openAIResponse.data;
+                    //         console.log('AI response:', insight);
+
+                    //         setActivities(stravaActivities);
+                    //         setLoading(false);
+                    //         setAiInsights(insight.result);
+                    //     })
+                    //     .catch(error => {
+                    //         console.error('Error fetching AI insights:', error);
+                    //     });
+                    // }
                 }
             })
             .catch(error => {

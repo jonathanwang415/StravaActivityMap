@@ -1,3 +1,4 @@
+import { getOpenAiPrompt } from '@/utils/prompts';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
@@ -7,7 +8,9 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt } = await req.json();
+    const { totalMileage, totalCyclingPower } = await req.json();
+
+    const prompt = getOpenAiPrompt (totalMileage, totalCyclingPower);
 
     if (!prompt) {
       return NextResponse.json({ error: 'Missing prompt' }, { status: 400 });
