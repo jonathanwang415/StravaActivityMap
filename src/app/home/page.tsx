@@ -105,24 +105,30 @@ export default function HomePage() {
                     console.log('totalMileage:', mileage);
                     console.log('totalCyclingPower:', power);
 
-                    axios.post('/api/openai', { mileage, power })
-                        .then(openAIResponse => {
-                            if (openAIResponse.status !== 200) {
-                                console.error('Error fetching AI insights:', openAIResponse.statusText);
-                            }
+                    async function fetchAiInsights(totalMileage: number, totalCyclingPower: number) {
+                        console.log('fetchAiInsights called.');
 
-                            const insight = openAIResponse.data;
-                            console.log('AI response:', insight);
+                        try {
+                            console.log('fetchAiInsights post.');
 
+                            const res = await axios.post("/api/ollama", {
+                                totalMileage,
+                                totalCyclingPower
+                            });
+                            console.log('fetchAiInsights post returned.');
+                            console.log('AI Insights:', res.data.commentary);
                             setActivities(stravaActivities);
-                            setTotalMileage(mileage);
-                            setTotalCyclingPower(power);
+                            setAiInsights(res.data.commentary);
+                            setTotalMileage(totalMileage);
+                            setTotalCyclingPower(totalCyclingPower);
+                        } catch (err) {
+                            console.error("Error fetching commentary:", err);
+                        } finally {
                             setLoading(false);
-                            setAiInsights(insight.result);
-                        })
-                        .catch(error => {
-                            console.error('Error fetching AI insights:', error);
-                        });
+                        }
+                    }
+                    
+                    fetchAiInsights(Math.trunc(mileage), Math.trunc(power));
                 }
             })
             .catch(error => {
