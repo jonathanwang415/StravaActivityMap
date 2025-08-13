@@ -14,12 +14,14 @@ export default function HomePage() {
 
     const { isLoading, setLoading, loadingMessage } = useLoading();
     const [activities, setActivities] = useState<any[]>([]);
+    const [totalMileage, setTotalMileage] = useState<number>(0);
+    const [totalCyclingPower, setTotalCyclingPower] = useState<number>(0);
     const [aiInsights, setAiInsights] = useState<string>('');
     const hasFetched = useRef(false);
 
 
     useEffect(() => {
-        if (!token){
+        if (!token){    
             console.log('No token found, skipping API call');
             setTimeout(() => {
                 router.push('/login');
@@ -66,7 +68,7 @@ export default function HomePage() {
                     const stravaActivities: Activity [] = stravaResponse.data;
                     console.log('Activities fetched successfully:', stravaActivities);
 
-                    const totalMileage = stravaActivities.reduce((total, activity) => {
+                    const mileage = stravaActivities.reduce((total, activity) => {
                         if (!activity.distance) {
                             return total; // Skip if distance is not available
                         }
@@ -74,7 +76,7 @@ export default function HomePage() {
                         return total + activity.distance * 3.28084 / 5280; // Convert meters to miles
                     }, 0);
                 
-                    const totalCyclingPower = stravaActivities.reduce((total, activity) => {
+                    const power = stravaActivities.reduce((total, activity) => {
                         if (!activity.kilojoules || !activity.sport_type || activity.sport_type !== "Ride") {
                             return total; // Skip if distance is not available
                         }
@@ -82,10 +84,10 @@ export default function HomePage() {
                         return total + activity.kilojoules; // Convert meters to miles
                     }, 0);
 
-                    console.log('totalMileage:', totalMileage);
-                    console.log('totalCyclingPower:', totalCyclingPower);
+                    console.log('totalMileage:', mileage);
+                    console.log('totalCyclingPower:', power);
 
-                    axios.post('/api/openai', { totalMileage, totalCyclingPower })
+                    axios.post('/api/openai', { mileage, power })
                         .then(openAIResponse => {
                             if (openAIResponse.status !== 200) {
                                 console.error('Error fetching AI insights:', openAIResponse.statusText);
@@ -95,13 +97,14 @@ export default function HomePage() {
                             console.log('AI response:', insight);
 
                             setActivities(stravaActivities);
+                            setTotalMileage(mileage);
+                            setTotalCyclingPower(power);
                             setLoading(false);
                             setAiInsights(insight.result);
                         })
                         .catch(error => {
                             console.error('Error fetching AI insights:', error);
                         });
-                    
                 }
             })
             .catch(error => {
@@ -133,6 +136,8 @@ export default function HomePage() {
     return (
         <div>
             <h1>My Strava Activities</h1>
+            <p>Total Mileage: {totalMileage.toFixed(0)} miles</p>
+            <p>Total Cycling Power: {totalCyclingPower > 0 ? `${totalCyclingPower.toFixed(0)} kJ` : 'N/A'}</p>
             <p> Total Activities : {activities.length}</p>
             <p> AI Insights: {aiInsights}</p>
             <ActivityMap activities={activities} />

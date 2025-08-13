@@ -8,9 +8,9 @@ const openai = new OpenAI({
 
 export async function POST(req: NextRequest) {
   try {
-    const { totalMileage, totalCyclingPower } = await req.json();
+    const { mileage, power } = await req.json();
 
-    const prompt = getOpenAiPrompt (totalMileage, totalCyclingPower);
+    const prompt = getOpenAiPrompt (mileage, power);
 
     if (!prompt) {
       return NextResponse.json({ error: 'Missing prompt' }, { status: 400 });
