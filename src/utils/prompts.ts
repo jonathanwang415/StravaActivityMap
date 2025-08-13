@@ -15,6 +15,7 @@ export function getOpenAiPrompt(totalMileage: number, totalCyclingPower: number)
         4. Keep the tone playful and make the user feel like a legend.
         5. Stay under 50 words total.
         6. If the total cycling power is 0 or not available, do not mention it in the response.
+        7. Add new lines between each sentence for readability.
 
         Example style:  
         "142 miles traveled — enough to go from London to Brussels — and 23,500 watts produced, enough to power 80 houses for a day (assuming each needs 300 watts/hour)."  
