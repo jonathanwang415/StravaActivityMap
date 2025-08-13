@@ -34,7 +34,7 @@ export default function HomePage() {
         if (hasFetched.current) {
             return;
         }
-        
+
         hasFetched.current = true;
 
         console.log('Fetching activities with token:', token);
@@ -85,47 +85,23 @@ export default function HomePage() {
                     console.log('totalMileage:', totalMileage);
                     console.log('totalCyclingPower:', totalCyclingPower);
 
-                    async function fetchAiInsights(totalMileage: number, totalCyclingPower: number) {
-                        console.log('fetchAiInsights called.');
+                    axios.post('/api/openai', { totalMileage, totalCyclingPower })
+                        .then(openAIResponse => {
+                            if (openAIResponse.status !== 200) {
+                                console.error('Error fetching AI insights:', openAIResponse.statusText);
+                            }
 
-                        try {
-                            console.log('fetchAiInsights post.');
+                            const insight = openAIResponse.data;
+                            console.log('AI response:', insight);
 
-                            const res = await axios.post("/api/ollama", {
-                                totalMileage,
-                                totalCyclingPower
-                            });
-                            console.log('fetchAiInsights post returned.');
-                            console.log('AI Insights:', res.data.commentary);
                             setActivities(stravaActivities);
-                            setAiInsights(res.data.commentary);
-                        } catch (err) {
-                            console.error("Error fetching commentary:", err);
-                        } finally {
                             setLoading(false);
-                        }
-                    }
+                            setAiInsights(insight.result);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching AI insights:', error);
+                        });
                     
-                    fetchAiInsights(totalMileage, totalCyclingPower);
-
-                    // if (!aiInsights) {
-                    //     axios.post('/api/openai', { totalMileage, totalCyclingPower })
-                    //     .then(openAIResponse => {
-                    //         if (openAIResponse.status !== 200) {
-                    //             console.error('Error fetching AI insights:', openAIResponse.statusText);
-                    //         }
-
-                    //         const insight = openAIResponse.data;
-                    //         console.log('AI response:', insight);
-
-                    //         setActivities(stravaActivities);
-                    //         setLoading(false);
-                    //         setAiInsights(insight.result);
-                    //     })
-                    //     .catch(error => {
-                    //         console.error('Error fetching AI insights:', error);
-                    //     });
-                    // }
                 }
             })
             .catch(error => {
