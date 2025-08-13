@@ -86,21 +86,25 @@ export default function HomePage() {
                     const stravaActivities: Activity [] = stravaResponse.data;
                     console.log('Activities fetched successfully:', stravaActivities);
 
-                    const mileage = stravaActivities.reduce((total, activity) => {
+                    let mileage = stravaActivities.reduce((total, activity) => {
                         if (!activity.distance) {
                             return total; // Skip if distance is not available
                         }
                 
                         return total + activity.distance * 3.28084 / 5280; // Convert meters to miles
                     }, 0);
+
+                    mileage = Math.trunc(mileage);
                 
-                    const power = stravaActivities.reduce((total, activity) => {
+                    let power = stravaActivities.reduce((total, activity) => {
                         if (!activity.kilojoules || !activity.sport_type || activity.sport_type !== "Ride") {
                             return total; // Skip if distance is not available
                         }
                 
                         return total + activity.kilojoules; // Convert meters to miles
                     }, 0);
+
+                    power = Math.trunc(power);
 
                     console.log('totalMileage:', mileage);
                     console.log('totalCyclingPower:', power);
