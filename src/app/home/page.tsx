@@ -11,7 +11,7 @@ import { Spinner, Box, Card, Avatar, Table, Heading, Text, Flex, Button, Contain
 
 export default function HomePage() {
     const router = useRouter();
-    const { token } = useAuth();
+    const { token, setToken, logout } = useAuth();
     const { isLoading, setLoading, loadingMessage } = useLoading();
 
     const [activities, setActivities] = useState<any[]>([]);
@@ -70,15 +70,12 @@ export default function HomePage() {
             }
         };
 
-        if (!isLoading) {
-            return;
-        }
-
         axios.get('https://www.strava.com/api/v3/athlete/activities', config)
             .then(stravaResponse => {
                 if (stravaResponse.status !== 200) {
                     if (stravaResponse.status === 401) {
                         console.error('Unauthorized: Token is invalid or expired. Redirecting for re-authorization.');
+                        logout();
                         const router = useRouter();
                         router.push('/login');
                     }
@@ -137,15 +134,7 @@ export default function HomePage() {
                     router.push('/login');
                 }
             });
-
-        return () => {
-            // logout(); // Clean up the token on unmount
-            // setActivities([]);
-            // setAiInsights('');
-            // setLoading(false); // Reset loading state
-            // console.log('Cleanup: Token cleared and state reset');
-        }
-    }, [token]);
+    }, [token, activities, aiInsights]);
 
     const loadingComponent = (
         <Flex direction="row" gap="5" mt="4">
@@ -154,9 +143,13 @@ export default function HomePage() {
                 {loadingMessage}
             </Heading>
         </Flex>
-    );
+    );        
 
-    const mainComponent = (
+    if (isLoading) {
+        return loadingComponent;
+    }
+
+    return (
         <Flex direction="column" gap="5" mt="4">
             <Heading size="5" align="center">
                 Strava Activity Summary
@@ -201,27 +194,23 @@ export default function HomePage() {
                         </Box>
                     </Flex>
                     <Button variant="soft" size="2" mt="4" mb="4" onClick={() => fetchAiInsights(totalMileage, totalCyclingPower)}>
-                    <Avatar
-                        size="1"
-                        src="/images/ai.png"
-                        radius="full"
-                        fallback="T"
-                        title="Artificial intelligence icons created by RIkas Dzihab - Flaticon"
-                    />
-                    Regenerate
-                </Button>
+                        <Avatar
+                            size="1"
+                            src="/images/ai.png"
+                            radius="full"
+                            fallback="T"
+                            title="Artificial intelligence icons created by RIkas Dzihab - Flaticon"
+                        />
+                        Regenerate
+                    </Button>
                 </Card>
             </Box>
             
             <ActivityMap activities={activities} />
+
+            <Button variant="soft" size="2" mt="4" mb="4" onClick={logout}>
+                Log Out
+            </Button>
         </Flex>
     );
-
-    return (
-        <Container maxWidth="50%" align="center">
-            <Card m="5">
-                {isLoading ? loadingComponent : mainComponent}
-            </Card>
-        </Container>
-      );
 }
