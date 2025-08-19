@@ -6,7 +6,7 @@ import { getStravaAuthUrl } from '../utils/strava';
 const ConnectStrava: React.FC= () => {
     return (
         <a href={getStravaAuthUrl()} className="btn">
-            Connect with Strava
+            Connect with Strava Now!
         </a>
     );
 };
